@@ -7,5 +7,18 @@ namespace CRUD_Web_API.Controllers
     [ApiController]
     public class PersonController : ControllerBase
     {
+        public PersonController()
+        {
+        }
+        
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok(new { message = "Hello from PersonController!" });
+        }
+
+
+
+
     }
 }
