@@ -25,13 +25,30 @@ Stop the container with `docker compose down`. The `sqlserver_data` volume is
 preserved; `docker compose down -v` deletes the database data. The `CRUDdb`
 database is created by the EF Core migration.
 
+## Run the full stack with Docker
+
+Build and start SQL Server, the API, and the React client:
+
+```bash
+docker compose up --build -d
+docker compose ps
+```
+
+Open the client at `http://localhost:5173`; the API and Swagger UI are available
+at `http://localhost:5200`. The API applies EF Core migrations automatically
+when started by this local Compose configuration. This setting is intended for
+local development only; production deployments should apply migrations as a
+separate controlled step.
+
+Stop the stack with `docker compose down`. The SQL Server volume is preserved.
+
 ## Run the API locally
 
 Store the same SQL Server password from `.env` in .NET user secrets:
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
-  'Server=localhost,1433;Database=CRUDdb;User Id=sa;Password=CRUDdbPassword123!;TrustServerCertificate=True' \
+  'Server=localhost,1433;Database=CRUDdb;User Id=sa;Password=YOUR_SA_PASSWORD;TrustServerCertificate=True' \
   --project "Server/CRUD Web API/CRUD Web API/CRUD Web API.csproj"
 ```
 

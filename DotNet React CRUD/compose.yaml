@@ -19,5 +19,29 @@ services:
       retries: 10
       start_period: 30s
 
+  api:
+    build:
+      context: ./Server/CRUD Web API/CRUD Web API
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      ApplyDatabaseMigrations: "true"
+      ConnectionStrings__DefaultConnection: Server=database,1433;Database=CRUDdb;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env};TrustServerCertificate=True
+    ports:
+      - "127.0.0.1:5200:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./Client/frontend
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   sqlserver_data:

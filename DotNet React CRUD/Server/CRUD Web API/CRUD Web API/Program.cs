@@ -19,6 +19,13 @@ builder.Services.AddScoped<IPersonService, PersonService>();
 
 var app = builder.Build();
 
+if (app.Configuration.GetValue<bool>("ApplyDatabaseMigrations"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
