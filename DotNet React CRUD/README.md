@@ -5,9 +5,9 @@
 The database runs in Docker and is exposed only on localhost. Its data is kept in
 a named Docker volume between container restarts.
 
-1. Copy `.env.example` to `.env`.
+1. Configure `.env`.
 2. Set `MSSQL_SA_PASSWORD` in `.env` to a strong password that meets SQL Server's
-   password complexity requirements. Do not commit `.env`.
+   password complexity requirements.
 3. Start SQL Server:
 
    ```bash
