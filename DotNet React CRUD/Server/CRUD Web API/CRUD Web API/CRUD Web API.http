@@ -1,6 +1,47 @@
-@CRUD_Web_API_HostAddress = http://localhost:5240
+@CRUD_Web_API_HostAddress = http://localhost:5200
+@personId = 1
 
-GET {{CRUD_Web_API_HostAddress}}/weatherforecast/
+### Get all people
+GET {{CRUD_Web_API_HostAddress}}/api/person
 Accept: application/json
 
 ###
+
+### Get a person
+GET {{CRUD_Web_API_HostAddress}}/api/person/{{personId}}
+Accept: application/json
+
+###
+
+### Create a person
+POST {{CRUD_Web_API_HostAddress}}/api/person
+Content-Type: application/json
+
+{
+  "name": "Alex Smith",
+  "email": "alex.smith@example.com",
+  "phoneNumber": "555-0100"
+}
+
+###
+
+### Update a person
+PUT {{CRUD_Web_API_HostAddress}}/api/person/{{personId}}
+Content-Type: application/json
+
+{
+  "name": "Alex Smith",
+  "email": "alex.smith@example.com",
+  "phoneNumber": null
+}
+
+###
+
+### Delete a person
+DELETE {{CRUD_Web_API_HostAddress}}/api/person/{{personId}}
+
+###
+
+### Get a person that does not exist
+GET {{CRUD_Web_API_HostAddress}}/api/person/999999
+Accept: application/json
