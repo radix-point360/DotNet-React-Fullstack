@@ -16,7 +16,7 @@ export const resumeData = {
   summary:
     ".NET Software Developer with 3+ years of experience developing and maintaining enterprise web and desktop applications. Skilled in building RESTful APIs using C# and ASP.NET Core Web API, developing web applications using ASP.NET MVC, and maintaining legacy desktop applications using VB.NET and Windows Forms. Experienced in Entity Framework Core, LINQ, SQL Server, JWT authentication, role-based authorization, and database optimization.",
   metrics: [
-    { label: "Year Experience", value: "3+" },
+    { label: "Years Experience", value: "3+" },
     { label: "Enterprise Dashboards", value: "5+" },
     { label: "Ticket Resolution Rate", value: "95%" },
     { label: "Clients Served", value: "SBD & ERP" }
