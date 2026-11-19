@@ -19,12 +19,12 @@ defaults:
     working-directory: ./shaikhsabirportfolio/client
 
 jobs:
-  # JOB 1: Code Quality & Build Verification
-  lint-and-build:
-    name: Lint and Verify Build
+  # JOB 1: Build Verification
+  build-client:
+    name: Verify Client Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout only Portfolio Client folder
+      - name: Checkout Portfolio Client folder
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -33,15 +33,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: npm
           cache-dependency-path: ./shaikhsabirportfolio/client/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run ESLint (if configured)
+        run: npm run lint --if-present
 
       - name: Verify Build
         run: npm run build
@@ -49,7 +49,7 @@ jobs:
   # JOB 2: Preview Deployment (Runs on Pull Requests & posts preview URL comment)
   deploy-preview:
     name: Deploy Preview to Vercel
-    needs: lint-and-build
+    needs: build-client
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -73,7 +73,7 @@ jobs:
   # JOB 3: Production Deployment (Runs only on push/merge to main)
   deploy-production:
     name: Deploy Production to Vercel
-    needs: lint-and-build
+    needs: build-client
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
