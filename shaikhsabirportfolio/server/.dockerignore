@@ -1,0 +1,28 @@
+# .NET build and cache directories
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+*.userosscbo
+*.sln.docstates
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.*.local.json
+
+# Git and CI/CD files
+.git/
+.gitignore
+.github/
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
