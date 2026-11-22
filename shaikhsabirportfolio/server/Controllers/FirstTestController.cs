@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace server.Controllers
     [ApiController]
     public class FirstTestController : ControllerBase
     {
+        [Authorize(Roles = "Admin")]
         [HttpGet(Name = "GetFirstTest")]
         [HttpGet("/")]
         [HttpGet("/api")]

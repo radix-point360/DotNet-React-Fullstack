@@ -14,6 +14,8 @@ public class PortfolioDbContext : DbContext
     public DbSet<Education> Educations => Set<Education>();
     public DbSet<Project> Projects => Set<Project>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;

@@ -1,43 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using server.Data;
+using server.IServices;
+using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException(
-        "Connection string 'DefaultConnection' is missing. Set it via 'dotnet user-secrets' in Development or 'ConnectionStrings__DefaultConnection' in Production.");
-}
 
-builder.Services.AddDbContext<PortfolioDbContext>(options =>
-{
-    options.UseNpgsql(connectionString);
-    options.UseSnakeCaseNamingConvention();
+builder.Services.AddDatabaseServices(builder.Configuration, builder.Environment);
 
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
-});
-
+builder.Services.AddJWTAuth(builder.Configuration);
 
 builder.WebHost.UseUrls("http://*:8080");
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins(builder.Configuration["FrontendUrl"]!)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+builder.Services.AddCORS();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 
 var app = builder.Build();
 
@@ -70,6 +53,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Lightweight Database Connectivity Health Check
