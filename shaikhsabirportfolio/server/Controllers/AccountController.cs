@@ -25,10 +25,11 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromQuery] LoginModel model)
+    public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        // Mock validation - replace with user database check (e.g., UserManager/PasswordHasher)
-        if (model.Username != "admin" || model.Password != "password123")
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Username);
+
+        if (user == null || user.Password != model.Password || user.Email != model.Username)
             return Unauthorized("Invalid credentials.");
 
         var claims = new[]

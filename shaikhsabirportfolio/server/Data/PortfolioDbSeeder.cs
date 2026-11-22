@@ -27,6 +27,13 @@ public static class PortfolioDbSeeder
             ResumeUrl = null
         };
 
+        var user = new User
+        {
+            UserName = "saberpatel40@gmail.com",
+            Email = "saberpatel40@gmail.com",
+            Password = ""
+        };
+
         var experiences = new List<Experience>
         {
             new()
@@ -189,6 +196,7 @@ public static class PortfolioDbSeeder
         await context.Skills.AddRangeAsync(skills);
         await context.Educations.AddRangeAsync(educations);
         await context.Projects.AddRangeAsync(projects);
+        await context.Users.AddAsync(user);
 
         await context.SaveChangesAsync();
     }

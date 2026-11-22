@@ -381,6 +381,46 @@ namespace server.Migrations
                     b.ToTable("skills", "public");
                 });
 
+            modelBuilder.Entity("server.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.ToTable("users", "public");
+                });
+
             modelBuilder.Entity("server.Entities.Education", b =>
                 {
                     b.HasOne("server.Entities.Profile", "Profile")

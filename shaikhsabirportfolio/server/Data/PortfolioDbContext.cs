@@ -8,6 +8,7 @@ public class PortfolioDbContext : DbContext
 {
     public PortfolioDbContext(DbContextOptions<PortfolioDbContext> options) : base(options) { }
 
+    public DbSet<User> Users => Set<User>();
     public DbSet<Profile> Profiles => Set<Profile>();
     public DbSet<Experience> Experiences => Set<Experience>();
     public DbSet<Skill> Skills => Set<Skill>();
@@ -32,7 +33,7 @@ public class PortfolioDbContext : DbContext
         modelBuilder.HasDefaultSchema("public");
 
         modelBuilder.Entity<Profile>().HasIndex(p => p.Email).IsUnique();
-        modelBuilder.Entity<Profile>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<Profile>().HasQueryFilter(e => !e.IsDeleted); // HasQueryFilter is used to filter out soft-deleted entities from queries.
 
         modelBuilder.Entity<Experience>().HasIndex(e => new { e.ProfileId, e.DisplayOrder });
         modelBuilder.Entity<Experience>().HasQueryFilter(e => !e.IsDeleted);
@@ -45,6 +46,8 @@ public class PortfolioDbContext : DbContext
         
         modelBuilder.Entity<Project>().HasIndex(pr => new { pr.ProfileId, pr.DisplayOrder });
         modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
+
+        modelBuilder.Entity<RefreshToken>().HasQueryFilter(e => !e.IsDeleted);
 
     }
 }
