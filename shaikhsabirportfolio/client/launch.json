@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Debug Vite React in Firefox",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "firefoxExecutable": "/snap/bin/firefox",
+      "profileDir": "${userHome}/.firefox-vscode-debug",
+      "keepProfileChanges": true,
+      "pathMappings": [
+        {
+          "url": "http://localhost:5173/",
+          "path": "${workspaceFolder}/"
+        }
+      ]
+    }
+  ]
+}

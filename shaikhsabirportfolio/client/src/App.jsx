@@ -1,100 +1,27 @@
-import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LandingResume from "./pages/LandingResume";
+import LoginPage from "./pages/LoginPage";
 
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Experience from "./components/Experience";
-import Skills from "./components/Skills";
-import Projects from "./components/Projects";
-import Education from "./components/Education";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
-
-import { resumeData } from "./data/resumeData";
+import ProtectedRoute from "./components/ProtectedRoute";
+import HomePage from "./pages/HomePage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
-  const [darkMode, setDarkMode] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-
-  const {
-    personalInfo,
-    summary,
-    metrics,
-    experience,
-    skills,
-    projects,
-    education,
-  } = resumeData;
-
-  const copyEmail = (e) => {
-    e.preventDefault();
-
-    navigator.clipboard.writeText(personalInfo.email);
-
-    setCopiedEmail(true);
-
-    setTimeout(() => {
-      setCopiedEmail(false);
-    }, 2500);
-  };
-
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 ${
-        darkMode
-          ? "bg-[#070b14] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200"
-          : "bg-slate-50 text-slate-900 selection:bg-sky-500/20 selection:text-sky-900"
-      }`}
-    >
-      <Navbar
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        personalInfo={personalInfo}
-      />
+    <>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<LandingResume />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
 
-      <main className="mx-auto max-w-7xl px-6">
-        <Hero
-          darkMode={darkMode}
-          personalInfo={personalInfo}
-          summary={summary}
-          metrics={metrics}
-          copiedEmail={copiedEmail}
-          copyEmail={copyEmail}
-        />
+        {/* Protected route(s) */}
+        <Route path="/admin" element={ <ProtectedRoute requireAdmin={true}> <AdminDashboard /> </ProtectedRoute> }/>
 
-        <Experience
-          darkMode={darkMode}
-          experience={experience}
-        />
-
-        <Skills
-          darkMode={darkMode}
-          skills={skills}
-        />
-
-        <Projects
-          darkMode={darkMode}
-          projects={projects}
-        />
-
-        <Education
-          darkMode={darkMode}
-          education={education}
-        />
-
-        <Contact
-          darkMode={darkMode}
-          personalInfo={personalInfo}
-        />
-      </main>
-
-      <Footer
-        darkMode={darkMode}
-        personalInfo={personalInfo}
-      />
-    </div>
+        {/* Fallback for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 

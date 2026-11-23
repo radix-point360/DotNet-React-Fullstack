@@ -13,7 +13,7 @@ builder.Services.AddJWTAuth(builder.Configuration);
 
 builder.WebHost.UseUrls("http://*:8080");
 
-builder.Services.AddCORS();
+builder.Services.AddCORS(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -32,8 +32,8 @@ using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<PortfolioDbContext>();
         await db.Database.MigrateAsync();
-        await PortfolioDbSeeder.SeedAsync(db);
-        logger.LogInformation("Database migration and seeding completed successfully.");
+        //await PortfolioDbSeeder.SeedAsync(db);
+        logger.LogInformation("Database migration completed successfully.");
     }
     catch (Exception ex)
     {
@@ -41,7 +41,6 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

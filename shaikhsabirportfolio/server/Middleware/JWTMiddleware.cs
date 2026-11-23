@@ -7,7 +7,7 @@ public static class JWTConfiguration
 {
     public static void ConfigureJWTAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtSettings = configuration.GetSection("JWT");
+        var jwtSettings = configuration.GetSection("Jwt");
         var secretKey = jwtSettings["SecretKey"];
 
         services.AddAuthentication(options =>

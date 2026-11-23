@@ -34,9 +34,11 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, model.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.Role, "Admin")
-            };
+        };
 
         var accessToken = _tokenService.GenerateAccessToken(claims);
         var refreshToken = _tokenService.GenerateRefreshToken(model.Username);
@@ -52,6 +54,7 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
         });
     }
 
+    [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto model)
     {
@@ -86,6 +89,7 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
         });
     }
 
+    [AllowAnonymous]
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromBody] string refreshToken)
     {

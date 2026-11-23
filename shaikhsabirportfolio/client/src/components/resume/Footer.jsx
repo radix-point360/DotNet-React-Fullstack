@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function Footer({ darkMode, personalInfo }) {
   return (
     <footer
@@ -10,6 +12,10 @@ function Footer({ darkMode, personalInfo }) {
       <p>
         © {new Date().getFullYear()} {personalInfo.name}. Built with React,
         Tailwind CSS & Vite.
+        <span className="mx-1">|</span>
+      <Link to="/login" className="text-blue-500 hover:underline">
+        Login
+      </Link>
       </p>
     </footer>
   );
