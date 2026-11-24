@@ -3,9 +3,12 @@ import axios from "axios";
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
-export const tokenStorage = {
+export const tokenStorage =
+ {
   getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
+
   getRefreshToken: () => localStorage.getItem(REFRESH_TOKEN_KEY),
+
   setTokens: (accessToken, refreshToken) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     if (refreshToken) {
@@ -70,19 +73,12 @@ const processQueue = (error, newAccessToken = null) => {
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error) => { const originalRequest = error.config;
 
     // Skip refresh logic if the failed request was login or refresh itself
-    const isAuthRoute =
-      originalRequest?.url?.includes("/account/login") ||
-      originalRequest?.url?.includes("/account/refresh");
+    const isAuthRoute = originalRequest?.url?.includes("/account/login") || originalRequest?.url?.includes("/account/refresh");
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest?._retry &&
-      !isAuthRoute
-    ) 
+    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRoute) 
     {
       const accessToken = tokenStorage.getAccessToken();
       const refreshToken = tokenStorage.getRefreshToken();

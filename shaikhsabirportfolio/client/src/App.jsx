@@ -12,6 +12,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingResume />} />
+        <Route path="/resume" element={<Navigate to="/" replace />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
 

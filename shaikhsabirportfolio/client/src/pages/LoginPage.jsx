@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import api, { tokenStorage } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +21,6 @@ export default function LoginPage() {
     try {
           
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      debugger;
       const response = await api.post(`${API_BASE_URL}/account/login`, {
         username,
         password,
@@ -30,7 +31,10 @@ export default function LoginPage() {
         throw new Error("No access token received from server.");
       }
 
-      tokenStorage.setTokens(accessToken, refreshToken);
+      // tokenStorage.setTokens(accessToken, refreshToken);
+      // navigate(redirectTo, { replace: true });
+
+      login(accessToken, refreshToken);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       const message =
@@ -94,7 +98,7 @@ export default function LoginPage() {
         >
           {loading ? "Signing in..." : "Login"}
         </button>
-      <Link to="/" className="text-blue-600 hover:underline"> Back to Resume </Link>
+      <Link to="/resume" className="text-blue-600 hover:underline"> Back to Resume </Link>
       </form>
     </div>
   );

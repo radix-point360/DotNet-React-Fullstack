@@ -1,30 +1,17 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { tokenStorage } from "../services/api";
-import { decodeAccessToken, getUserRoles, isTokenExpired } from "../utils/auth";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
   const location = useLocation();
-  const token = tokenStorage.getAccessToken();
-  const refreshToken = tokenStorage.getRefreshToken();
-  const decoded = decodeAccessToken();
+  const { isAuthenticated, isAdmin } = useAuth();
 
-  if (!token || !decoded) {
-    tokenStorage.clear();
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    // Attaches hidden metadata (location, obtained from useLocation()) to the navigation event without cluttering the URL with query parameters like ?redirect=/dashboard
+    return <Navigate to="/" state={{ from: location }} replace />; 
   }
 
-  // If access token is expired AND there is no refresh token, force login
-  if (isTokenExpired(decoded) && !refreshToken) {
-    tokenStorage.clear();
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-
-  if (requireAdmin) {
-    const roles = getUserRoles(decoded);
-    const hasAdminRole = roles.some((r) => String(r).toLowerCase() === "admin");
-    if (!hasAdminRole) {
-      return <Navigate to="/" replace />;
-    }
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
