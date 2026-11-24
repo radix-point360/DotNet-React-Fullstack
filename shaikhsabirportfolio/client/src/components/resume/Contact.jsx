@@ -4,6 +4,7 @@ import {
   MessageCircle,
   Download,
 } from "lucide-react";
+import ContactForm from "./ContactForm";
 
 function Contact({ darkMode, personalInfo }) {
   const mailtoLink = `mailto:${personalInfo.email}?subject=${encodeURIComponent(
@@ -19,7 +20,9 @@ function Contact({ darkMode, personalInfo }) {
   const callLink = `tel:${personalInfo.phoneRaw}`;
 
   return (
-    <section id="contact" className="py-24">
+    <section id="contact" 
+    //className="py-12 md:py-24 w-full md:w-1/2"
+    >
       <div
         className={`relative overflow-hidden rounded-3xl border p-8 sm:p-14 text-center shadow-2xl ${
           darkMode
@@ -86,7 +89,7 @@ function Contact({ darkMode, personalInfo }) {
           </a>
 
           {/* Resume */}
-          <a
+          {/* <a
             href={personalInfo.resumePdfPath}
             download={personalInfo.resumeFileName}
             className={`inline-flex items-center gap-2 rounded-xl border px-7 py-4 text-sm font-bold transition hover:scale-105 shadow-sm ${
@@ -97,9 +100,15 @@ function Contact({ darkMode, personalInfo }) {
           >
             <Download className="h-4 w-4 text-sky-500" />
             Download Resume
-          </a>
+          </a> */}
+        </div>
+        <div className={`mt-10`}>
+      <ContactForm />
+
         </div>
       </div>
+
+
     </section>
   );
 }

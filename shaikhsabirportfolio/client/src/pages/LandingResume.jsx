@@ -6,10 +6,13 @@ import Experience from "../components/resume/Experience";
 import Skills from "../components/resume/Skills";
 import Projects from "../components/resume/Projects";
 import Education from "../components/resume/Education";
-import Contact from "../components/resume/Contact";
 import Footer from "../components/resume/Footer";
+import ContactWrapper from "../components/resume/ContactWrapper";
+import Contact from "../components/resume/Contact";
+// import ContactForm from "../components/resume/ContactForm";
 
 import { resumeData } from "../data/resumeData";
+import ApiStatusBadge from "../components/ApiStatusBadge";
 
 function LandingResume() {
     
@@ -54,7 +57,6 @@ function LandingResume() {
         setMobileMenuOpen={setMobileMenuOpen}
         personalInfo={personalInfo}
       />
-
       <main className="mx-auto max-w-7xl px-6">
         <Hero
           darkMode={darkMode}
@@ -89,6 +91,7 @@ function LandingResume() {
           darkMode={darkMode}
           personalInfo={personalInfo}
         />
+
       </main>
 
       <Footer

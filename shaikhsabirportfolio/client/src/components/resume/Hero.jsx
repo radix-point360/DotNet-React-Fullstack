@@ -93,7 +93,7 @@ function Hero({
             {personalInfo.location}
           </span>
 
-          <a
+          {/* <a
             href={callLink}
             className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold transition hover:scale-105 shadow-sm ${
   darkMode
@@ -157,7 +157,7 @@ function Hero({
                 <Copy className="h-4 w-4" />
               )}
             </button>
-          </div>
+          </div> */}
 
           <a
             href={personalInfo.github}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import LogInOut from "../LogInOut";
 
 function Footer({ darkMode, personalInfo }) {
   return (
@@ -13,9 +14,8 @@ function Footer({ darkMode, personalInfo }) {
         © {new Date().getFullYear()} {personalInfo.name}. Built with React,
         Tailwind CSS & Vite.
         <span className="mx-1">|</span>
-      <Link to="/login" className="text-blue-500 hover:underline">
-        Login
-      </Link>
+      {/* <Link to="/login" className="text-blue-500 hover:underline"> Login </Link> */}
+      <LogInOut/>
       </p>
     </footer>
   );

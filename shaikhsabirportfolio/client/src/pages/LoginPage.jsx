@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/admin";
+  const redirectTo = location.state?.from?.pathname || "/";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);

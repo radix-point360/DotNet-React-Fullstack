@@ -62,7 +62,7 @@ app.MapGet("/api/health/db", async (PortfolioDbContext db, CancellationToken ct)
     return canConnect
         ? Results.Ok(new { status = "Healthy", environment = app.Environment.EnvironmentName })
         : Results.Problem("Cannot connect to PostgreSQL database.", statusCode: 503);
-});
+}).AllowAnonymous();
 
 app.MapControllers();
 
