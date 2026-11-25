@@ -16,12 +16,17 @@ namespace server.Services
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
             var issuer = jwtSettings["Issuer"];
             var audience = jwtSettings["Audience"];
-            var ExpiresTime = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["AccessTokenExpirationMinutes"]));
+            var expiresTime = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["AccessTokenExpirationMinutes"]!));
+
+            // var filteredClaims = claims.Where(c =>
+            //     c.Type != JwtRegisteredClaimNames.Exp &&
+            //     c.Type != JwtRegisteredClaimNames.Iat &&
+            //     c.Type != JwtRegisteredClaimNames.Nbf);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = ExpiresTime,
+                Expires = expiresTime,
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature)
@@ -35,17 +40,19 @@ namespace server.Services
 
         public RefreshToken GenerateRefreshToken(string username)
         {
-            var randomNumber = new byte[32];
+            //var randomNumber = new byte[32];
 
-            var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
+            //var rng = RandomNumberGenerator.Create();
+            //rng.GetBytes(randomNumber);
 
+            var randomNumber = RandomNumberGenerator.GetBytes(32);
+            var refreshDays = int.TryParse(configuration["Jwt:RefreshTokenExpirationDays"], out var days)? days : 7;
 
             RefreshToken refreshToken = new RefreshToken
             {
                 Username = username,
                 Token = Convert.ToBase64String(randomNumber),
-                ExpiresAt = DateTime.UtcNow.AddDays(5), // Set expiration time for refresh token (e.g., 14 days)       
+                ExpiresAt = DateTime.UtcNow.AddDays(refreshDays), // Set expiration time for refresh token (e.g., 14 days)       
                 IsRevoked = false,
                 CreatedAt = DateTime.UtcNow
             };
@@ -59,6 +66,7 @@ namespace server.Services
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
             var issuer = jwtSettings["Issuer"];
             var audience = jwtSettings["Audience"];
+
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,

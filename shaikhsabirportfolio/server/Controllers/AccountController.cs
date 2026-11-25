@@ -20,7 +20,21 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
     [HttpGet("login")]
     public IActionResult Login()
     {
-        return Ok(new LoginModel { Username = "admin", Password = "password123" });
+        return Ok("Accessed");
+    }
+
+    private const string RefreshCookieName = "refresh_token";
+
+    private void SetRefreshTokenCookie(string? token, DateTime? expiresAtUtc)
+    {
+        Response.Cookies.Append(RefreshCookieName, token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Required when SameSite=None (works on HTTPS & localhost)
+            SameSite = SameSiteMode.None, // Required for Vercel -> Azure cross-origin
+            Expires = expiresAtUtc,
+            Path = "/api/account" // Only sent to /api/account/* endpoints
+        });
     }
 
     [AllowAnonymous]
@@ -41,65 +55,85 @@ public class AccountController(PortfolioDbContext _context, ITokenService _token
         };
 
         var accessToken = _tokenService.GenerateAccessToken(claims);
-        var refreshToken = _tokenService.GenerateRefreshToken(model.Username);
+        var refreshToken = _tokenService.GenerateRefreshToken(user.Email);
 
         // Save refresh token to database
         _context.RefreshTokens.Add(refreshToken);
         await _context.SaveChangesAsync();
 
-        return Ok(new TokenResponseDto
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken.Token
-        });
+        SetRefreshTokenCookie(refreshToken.Token, refreshToken.ExpiresAt);
+
+        return Ok(new { accessToken });
     }
 
     [AllowAnonymous]
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto model)
+    public async Task<IActionResult> Refresh()
     {
-        // 1. Extract principal from the expired access token
-        var principal = _tokenService.GetClaimsPrincipalFromExpiredToken(model.AccessToken);
-        if (principal == null)
-            return BadRequest("Invalid access token.");
+        if (!Request.Cookies.TryGetValue(RefreshCookieName, out var cookieToken) ||
+            string.IsNullOrWhiteSpace(cookieToken))
+        {
+            return Unauthorized("Missing refresh token cookie.");
+        }
 
-        var username = principal.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
-            return BadRequest("Invalid token claims.");
-
-        // 2. Retrieve existing refresh token from database
-        var storedRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == model.RefreshToken && rt.Username == username);
+        // Look up the refresh token directly in DB (no expired access token needed on page reload)
+        var storedRefreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == cookieToken);
 
         if (storedRefreshToken == null || storedRefreshToken.IsExpired || storedRefreshToken.IsRevoked)
             return Unauthorized("Invalid or expired refresh token.");
 
-        // 3. Generate a new token pair (Token Rotation)
-        var newAccessToken = _tokenService.GenerateAccessToken(principal.Claims);
-        var newRefreshToken = _tokenService.GenerateRefreshToken(username);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == storedRefreshToken.Username);
 
-        // 4. Revoke old refresh token and store the new one
+        if (user == null)
+            return Unauthorized("User not found.");
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.Email),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+
+        var newAccessToken = _tokenService.GenerateAccessToken(claims);
+        var newRefreshToken = _tokenService.GenerateRefreshToken(user.Email);
+
         storedRefreshToken.IsRevoked = true;
         _context.RefreshTokens.Add(newRefreshToken);
         await _context.SaveChangesAsync();
 
-        return Ok(new TokenResponseDto
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken.Token
-        });
+        SetRefreshTokenCookie(newRefreshToken.Token, newRefreshToken.ExpiresAt);
+
+        return Ok(new { accessToken = newAccessToken });
     }
 
     [AllowAnonymous]
     [HttpPost("revoke")]
-    public async Task<IActionResult> Revoke([FromBody] string refreshToken)
+    public async Task<IActionResult> Revoke()
     {
-        var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-        if (token == null) return NotFound("Refresh token not found.");
+        if (Request.Cookies.TryGetValue(RefreshCookieName, out var cookieToken))
+        {
+            var token = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == cookieToken);
 
-        token.IsRevoked = true;
-        await _context.SaveChangesAsync();
+            if (token != null)
+            {
+                token.IsRevoked = true;
+                await _context.SaveChangesAsync();
+            }
+        }
 
-        return Ok("Token revoked successfully.");
+        Response.Cookies.Delete(RefreshCookieName, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/api/account"
+        });
+
+        return Ok("Logged out and token revoked.");
     }
 }
 

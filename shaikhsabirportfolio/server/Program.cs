@@ -20,7 +20,7 @@ builder.Services.AddOpenApi();
 
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 

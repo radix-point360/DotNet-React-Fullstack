@@ -10,6 +10,7 @@ import {
   Check,
   Sparkles,
 } from "lucide-react";
+import ApiStatusBadge from "../ApiStatusBadge";
 
 function Hero({
   darkMode,

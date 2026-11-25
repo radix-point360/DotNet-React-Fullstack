@@ -1,32 +1,29 @@
 import axios from "axios";
 
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
+// Stored strictly in RAM — cleared automatically if tab closes, never accessible via localStorage
+let inMemoryAccessToken = null;
+let onAuthChangeCallback = null;
 
-export const tokenStorage =
- {
-  getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
-
-  getRefreshToken: () => localStorage.getItem(REFRESH_TOKEN_KEY),
-
-  setTokens: (accessToken, refreshToken) => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    if (refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    }
+export const tokenStore = {
+  getAccessToken: () => inMemoryAccessToken,
+  setAccessToken: (token) => {
+    inMemoryAccessToken = token;
+    if (onAuthChangeCallback) onAuthChangeCallback(token);
   },
-
   clear: () => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    inMemoryAccessToken = null;
+    if (onAuthChangeCallback) onAuthChangeCallback(null);
   },
-
+  subscribe: (cb) => {
+    onAuthChangeCallback = cb;
+  },
 };
 
-const apiBaseUrl = (import.meta.env && import.meta.env.VITE_API_BASE_URL);
+const apiBaseUrl = ((import.meta.env && import.meta.env.VITE_API_BASE_URL)).replace(/\/+$/, "");
 
 const api = axios.create({
   baseURL: apiBaseUrl,
+  withCredentials: true, // Sends HttpOnly refresh_token cookie automatically
   headers: {
     "Content-Type": "application/json",
   },
@@ -34,7 +31,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = tokenStorage.getAccessToken();
+    const token = tokenStore.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -43,52 +40,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       tokenStorage.clear();
-//       if (window.location.pathname !== "/login") {
-//         window.location.href = "/login";
-//       }
-//     }
-//     return Promise.reject(error);
-//   }
-// );
 
-// Queue concurrent 401 requests while a single refresh call is in progress
+
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, newAccessToken = null) => {
+const processQueue = (error, newToken = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(newAccessToken);
-    }
+    if (error) reject(error);
+    else resolve(newToken);
   });
   failedQueue = [];
 };
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => { const originalRequest = error.config;
-
-    // Skip refresh logic if the failed request was login or refresh itself
+  async (error) => {
+    const originalRequest = error.config;
     const isAuthRoute = originalRequest?.url?.includes("/account/login") || originalRequest?.url?.includes("/account/refresh");
 
-    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRoute) 
-    {
-      const accessToken = tokenStorage.getAccessToken();
-      const refreshToken = tokenStorage.getRefreshToken();
-
-      if (!accessToken || !refreshToken) {
-        tokenStorage.clear();
-        window.location.href = "/";
-        return Promise.reject(error);
-      }
-
+    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRoute) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -102,23 +73,21 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Use plain axios (not `api`) so this call doesn't re-trigger interceptors
-        const { data } = await axios.post(`${apiBaseUrl}/account/refresh`, {
-          accessToken,
-          refreshToken,
-        });
+        // Browser sends HttpOnly cookie automatically because withCredentials is true
+        const { data } = await axios.post(
+          `${apiBaseUrl}/account/refresh`,
+          {},
+          { withCredentials: true }
+        );
 
-        tokenStorage.setTokens(data.accessToken, data.refreshToken);
+        tokenStore.setAccessToken(data.accessToken);
         processQueue(null, data.accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        tokenStorage.clear();
-        if (window.location.pathname !== "/") {
-          window.location.href = "/";
-        }
+        tokenStore.clear();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

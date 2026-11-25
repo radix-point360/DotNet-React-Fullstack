@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 
 export default function ApiStatusBadge() {
-  const [healthy, setHealthy] = useState(null);
+  const [healthy, setHealthy] = useState(false);
 
   useEffect(() => {
     api

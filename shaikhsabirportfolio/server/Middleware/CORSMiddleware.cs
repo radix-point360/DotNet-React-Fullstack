@@ -12,7 +12,8 @@ public static class CORSConfiguration
             {
                 builder.WithOrigins(allowedOrigins)
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
         });
     }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import api, { tokenStorage } from "../services/api";
+import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
@@ -17,24 +17,19 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    
+
     try {
-          
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const response = await api.post(`${API_BASE_URL}/account/login`, {
+      const response = await api.post("/account/login", {
         username,
         password,
       });
 
-      const { accessToken, refreshToken } = response.data;
+      const { accessToken } = response.data;
       if (!accessToken) {
         throw new Error("No access token received from server.");
       }
 
-      // tokenStorage.setTokens(accessToken, refreshToken);
-      // navigate(redirectTo, { replace: true });
-
-      login(accessToken, refreshToken);
+      login(accessToken);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       const message =
@@ -98,7 +93,10 @@ export default function LoginPage() {
         >
           {loading ? "Signing in..." : "Login"}
         </button>
-      <Link to="/resume" className="text-blue-600 hover:underline"> Back to Resume </Link>
+
+        <Link to="/resume" className="text-blue-600 hover:underline">
+          Back to Resume
+        </Link>
       </form>
     </div>
   );

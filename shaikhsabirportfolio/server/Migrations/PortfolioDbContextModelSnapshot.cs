@@ -362,9 +362,21 @@ namespace server.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_revoked");
 
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("text")
+                        .HasColumnName("replaced_by_token");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
                     b.Property<string>("Token")
                         .HasColumnType("text")
                         .HasColumnName("token");
+
+                    b.Property<Guid>("TokenFamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("token_family_id");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

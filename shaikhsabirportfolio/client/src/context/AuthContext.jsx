@@ -1,73 +1,74 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { tokenStorage } from "../services/api";
-import { decodeAccessToken, getUserRoles, getUserName } from "../utils/auth";
+import { jwtDecode } from "jwt-decode";
+import api, { tokenStore } from "../services/api";
 
 const AuthContext = createContext(null);
 
-function buildAuthState() {
-  const token = tokenStorage.getAccessToken();
-  const refreshToken = tokenStorage.getRefreshToken();
-  const decoded = decodeAccessToken();
+const MS_ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+const MS_NAME_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
 
-  if (!token || !decoded) {
+function parseToken(token) {
+  if (!token) return { isAuthenticated: false, user: null, roles: [], isAdmin: false };
+  try {
+    const decoded = jwtDecode(token);
+    const rawRole = decoded.role ?? decoded[MS_ROLE_CLAIM] ?? [];
+    const roles = (Array.isArray(rawRole) ? rawRole : [rawRole]).map((r) => String(r).toLowerCase());
+    
+    return {
+      isAuthenticated: true,
+      user: decoded.name || decoded[MS_NAME_CLAIM] || decoded.email || null,
+      roles,
+      isAdmin: roles.includes("admin"),
+    };
+  } catch {
     return { isAuthenticated: false, user: null, roles: [], isAdmin: false };
   }
-
-  const isExpired = decoded.exp && decoded.exp * 1000 <= Date.now();
-  if (isExpired && !refreshToken) {
-    tokenStorage.clear();
-    return { isAuthenticated: false, user: null, roles: [], isAdmin: false };
-  }
-
-  const roles = getUserRoles(decoded).map((r) => String(r).toLowerCase());
-  return {
-    isAuthenticated: true,
-    user: getUserName(),
-    roles,
-    isAdmin: roles.includes("admin"),
-  };
 }
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(() => buildAuthState());
+  const [auth, setAuth] = useState(() => parseToken(null));
+  const [initializing, setInitializing] = useState(true);
 
-  //All three functions are wrapped in useCallback with [] dependencies so their references never change. 
- //This prevents child components that consume useAuth() from re-rendering unnecessarily, 
-//and allows syncAuth to be safely used inside useEffect.
-  const syncAuth = useCallback(() => {
-    setAuth(buildAuthState());
+  useEffect(() => {tokenStore.subscribe((newToken) => setAuth(parseToken(newToken)));
+
+    // Restore session silently on page reload using the HttpOnly refresh cookie
+    api
+      .post("/account/refresh")
+      .then(({ data }) => {
+        tokenStore.setAccessToken(data.accessToken);
+      })
+      .catch(() => {
+        tokenStore.clear();
+      })
+      .finally(() => {
+        setInitializing(false);
+      });
   }, []);
 
-  const login = useCallback((accessToken, refreshToken) => {
-    tokenStorage.setTokens(accessToken, refreshToken);
-    setAuth(buildAuthState());
+  const login = useCallback((accessToken) => {
+    tokenStore.setAccessToken(accessToken);
   }, []);
 
-  const logout = useCallback(() => {
-    tokenStorage.clear();
-    setAuth({ isAuthenticated: false, user: null, roles: [], isAdmin: false });
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/account/revoke");
+    } finally {
+      tokenStore.clear();
+    }
   }, []);
 
-  // Keep multiple browser tabs in sync when localStorage changes
-  //The browser's "storage" event fires automatically in other open tabs whenever localStorage changes. 
-  //If a user logs out in Tab A, Tab B detects the change via syncAuth and immediately updates its UI to logged-out too. 
-  // The return () => ... cleans up the listener if AuthProvider unmounts.
-  useEffect(() => {
-    window.addEventListener("storage", syncAuth);
-    return () => window.removeEventListener("storage", syncAuth);
-  }, [syncAuth]);
+  // Wait for initial cookie check before rendering ProtectedRoute so it doesn't flash /login
+  if (initializing) return null;
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, logout, syncAuth }}>
+    <AuthContext.Provider value={{ ...auth, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used inside an <AuthProvider>.");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>.");
+  return ctx;
 }

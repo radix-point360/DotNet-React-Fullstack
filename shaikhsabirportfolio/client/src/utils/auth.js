@@ -1,11 +1,10 @@
 import { jwtDecode } from "jwt-decode";
-import { tokenStorage } from "../services/api";
+import { tokenStore } from "../services/api";
 
 const MS_ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 const MS_NAME_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
 
-export function decodeAccessToken() {
-  const token = tokenStorage.getAccessToken();
+export function decodeAccessToken(token = tokenStore.getAccessToken()) {
   if (!token) return null;
 
   try {
@@ -17,7 +16,6 @@ export function decodeAccessToken() {
 
 export function isTokenExpired(decoded) {
   if (!decoded?.exp) return true;
-  // exp is in seconds; Date.now() is in milliseconds
   return decoded.exp * 1000 <= Date.now();
 }
 
@@ -41,13 +39,4 @@ export function getUserName() {
   if (!decoded || isTokenExpired(decoded)) return null;
 
   return decoded.name || decoded[MS_NAME_CLAIM] || decoded.email || null;
-}
-
-export function logout(navigate) {
-  tokenStorage.clear();
-  if (typeof navigate === "function") {
-    navigate("/login", { replace: true });
-  } else {
-    window.location.href = "/login";
-  }
 }

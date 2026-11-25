@@ -7,6 +7,9 @@ public class RefreshToken : BaseEntity
         public DateTime? ExpiresAt { get; set; }
         public bool IsRevoked { get; set; }
 
-        public bool IsExpired => ExpiresAt.HasValue && DateTime.UtcNow >= ExpiresAt.Value;
+        public Guid TokenFamilyId { get; set; }
+        public DateTime? RevokedAt { get; set; }
+        public string? ReplacedByToken { get; set; }
 
+        public bool IsExpired => ExpiresAt.HasValue && DateTime.UtcNow >= ExpiresAt.Value;
     }
