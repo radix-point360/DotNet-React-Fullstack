@@ -3,6 +3,15 @@ import api from "../services/api";
 
 export default function ApiStatusBadge() {
   const [healthy, setHealthy] = useState(false);
+  const [time, setTime] = useState(45);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+    }, []);
 
   useEffect(() => {
     api
@@ -20,7 +29,7 @@ export default function ApiStatusBadge() {
           healthy ? "bg-green-500" : "bg-red-500"
         }`}
       />
-      {healthy ? "" : "Waking up the backend server. Hang tight until the dot turns green!"}
+      {healthy ? "" : "Waking up the backend server. Hang tight until the dot turns green! (" + time + ")" }
     </span>
   );    
 }
