@@ -1,18 +1,16 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
-  const location = useLocation();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, initializing } = useAuth();
 
-  if (!isAuthenticated) {
-    // Attaches hidden metadata (location, obtained from useLocation()) to the navigation event without cluttering the URL with query parameters like ?redirect=/dashboard
-    return <Navigate to="/" state={{ from: location }} replace />; 
+if (initializing) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <span className="text-sm text-gray-400">Checking session...</span>
+      </div>
+    );
   }
 
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 }

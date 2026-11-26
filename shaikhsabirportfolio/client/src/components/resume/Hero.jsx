@@ -85,11 +85,11 @@ function Hero({
           {summary}
         </p>
                 <div
-          className={`mt-8 flex flex-wrap items-center gap-3.5 text-sm ${
+          className={`mt-8 flex flex-wrap items-center gap-3.5 text-sm grid grid-cols-2 lg:grid-cols-3 gap-4 ${
             darkMode ? "text-slate-300" : "text-slate-700"
           }`}
         >
-          <span className="flex items-center gap-1.5 mr-2 font-medium">
+          <span className="flex items-center gap-1.5 mr-2 font-medium col-span-2 lg:col-span-1">
             <MapPin className="h-4 w-4 text-sky-500" />
             {personalInfo.location}
           </span>

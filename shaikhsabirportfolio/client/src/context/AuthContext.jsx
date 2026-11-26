@@ -58,10 +58,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Wait for initial cookie check before rendering ProtectedRoute so it doesn't flash /login
-  if (initializing) return null;
+  //if (initializing) return null;
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, logout }}>
+    <AuthContext.Provider value={{ ...auth, login, logout, initializing }}>
       {children}
     </AuthContext.Provider>
   );
