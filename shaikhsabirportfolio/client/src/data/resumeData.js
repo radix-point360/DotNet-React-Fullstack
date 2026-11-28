@@ -51,7 +51,7 @@ export const resumeData = {
     },
   ],
   skills: {
-    "Languages": ["C#", "VB.NET", "SQL", "JavaScript", "TypeScript"],
+    "Languages": ["C#", "VB.NET", "SQL", "JavaScript"],
     "Backend & Desktop": [
       ".NET Core 6+",
       "ASP.NET Core Web API",
@@ -64,7 +64,6 @@ export const resumeData = {
     ],
     "Frontend": [
       "React",
-      "Tailwind CSS",
       "jQuery",
       "AJAX",
       "HTML5",
@@ -73,6 +72,7 @@ export const resumeData = {
     ],
     "Databases": [
       "Microsoft SQL Server",
+      "Postgresql",
       "T-SQL",
       "Stored Procedures",
       "Functions & Triggers",
@@ -85,6 +85,8 @@ export const resumeData = {
       "Visual Studio",
       "Postman",
       "VBA Excel Macros",
+      "SSMS",
+      "PgAdmin 4"
     ],
     "AI Productivity": [
       "GitHub Copilot",
